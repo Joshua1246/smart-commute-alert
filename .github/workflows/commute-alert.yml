@@ -1,0 +1,33 @@
+name: Smart Commute Risk Alert
+
+on:
+  # 平日上午 7 點自動執行 (台灣時間 07:00 等於 UTC 時間前一天 23:00，週日~週四 UTC 代表台灣週一~週五)
+  schedule:
+    - cron: '0 23 * * 0-4'
+  # 支援手動觸發測試
+  workflow_dispatch:
+
+jobs:
+  commute-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 檢出專案程式碼
+      uses: actions/checkout@v4
+
+    - name: 設定 Python 環境
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: 安裝相依套件
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: 執行通勤風險檢查與發送通知
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        python commute_alert.py
